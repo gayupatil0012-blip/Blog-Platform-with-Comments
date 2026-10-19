@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100 dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevPulse - Modern Blog Platform & Community</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            500: '#06b6d4',
+                            600: '#0891b2',
+                            700: '#0e7490',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.8); }
+        ::-webkit-scrollbar-thumb { background: rgba(6, 182, 212, 0.4); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(6, 182, 212, 0.8); }
+        .glass-card { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(12px); }
+    </style>
+</head>
+<body class="h-full font-sans antialiased flex flex-col bg-slate-950 text-slate-100 selection:bg-cyan-500 selection:text-white">
+
+    <!-- Toast Notification Overlay -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Header Navigation -->
+    <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur-md sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            
+            <!-- Logo & Brand -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="showSection('feed')">
+                <div class="p-2.5 bg-gradient-to-tr from-cyan-600 to-teal-500 rounded-xl shadow-lg shadow-cyan-500/20 flex items-center justify-center">
+                    <i class="fa-solid fa-feather-pointed text-xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black tracking-tight bg-gradient-to-r from-white via-cyan-200 to-cyan-400 bg-clip-text text-transparent">
+                        DevPulse
+                    </h1>
+                    <p class="text-[10px] text-slate-400 hidden sm:block" id="subHeaderDesc">
+                        Full-Stack Blogging Platform & API Hub
+                    </p>
+                </div>
+            </div>
+
+            <!-- Global Actions -->
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                
+                <!-- Tutorial Button -->
+                <button onclick="openTutorialModal()" class="hidden md:flex items-center space-x-1.5 bg-cyan-950/60 text-cyan-300 hover:bg-cyan-900/60 border border-cyan-500/30 px-3 py-1.5 rounded-xl text-xs font-medium transition duration-200">
+                    <i class="fa-solid fa-graduation-cap text-cyan-400"></i>
+                    <span id="txtWatchTutorial">Task Tutorial</span>
+                </button>
+
+                <!-- Language Selector -->
+                <button onclick="toggleLanguage()" class="bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/80 px-3 py-1.5 rounded-xl text-xs font-semibold transition">
+                    🌐 EN / मराठी
+                </button>
+
+                <!-- Create Post CTA -->
+                <button onclick="openCreatePostModal()" class="bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-lg shadow-cyan-600/20 transition flex items-center space-x-1.5">
+                    <i class="fa-solid fa-pen-nib"></i>
+                    <span id="btnCreatePostNav">Write Post</span>
+                </button>
+
+                <!-- Navigation Tabs / Profile Dropdown -->
+                <div class="flex items-center space-x-1 pl-2 border-l border-slate-800">
+                    <button onclick="showSection('feed')" id="navFeedBtn" class="p-2 text-cyan-400 hover:bg-slate-800 rounded-lg transition" title="Home Feed">
+                        <i class="fa-solid fa-house text-sm"></i>
+                    </button>
+                    <button onclick="showSection('dashboard')" id="navDashBtn" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition" title="Author Dashboard">
+                        <i class="fa-solid fa-chart-pie text-sm"></i>
+                    </button>
+                    <button onclick="openAuthModal()" id="authNavBtn" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition" title="User Auth">
+                        <i class="fa-solid fa-user-circle text-base"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        
+        <!-- SECTION: HOME FEED VIEW -->
+        <div id="feedSection" class="space-y-6">
+            
+            <!-- Hero Banner -->
+            <div class="relative bg-gradient-to-r from-slate-900 via-slate-900 to-cyan-950/40 border border-slate-800 rounded-2xl p-6 sm:p-8 overflow-hidden shadow-2xl">
+                <div class="max-w-2xl space-y-3 z-10 relative">
+                    <span class="bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider" id="heroBadge">Full-Stack Tech Stories</span>
+                    <h2 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight" id="heroTitle">Publish Ideas, Engage Readers & Master APIs</h2>
+                    <p class="text-slate-300 text-sm sm:text-base leading-relaxed" id="heroDesc">
+                        A modern blog ecosystem with real-time comments, category management, author metrics, and REST architecture setup.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Search, Category & Sort Bar -->
+            <div class="glass-card border border-slate-800 p-4 rounded-2xl shadow-xl flex flex-col lg:flex-row items-center justify-between gap-4">
+                
+                <!-- Category Tabs -->
+                <div id="categoryContainer" class="flex items-center gap-1.5 overflow-x-auto w-full lg:w-auto pb-2 lg:pb-0 scrollbar-none">
+                    <!-- Dynamic categories -->
+                </div>
+
+                <!-- Search Input & Sort Options -->
+                <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+                    <div class="relative w-full sm:w-64">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input type="text" id="searchInput" oninput="renderPosts()" placeholder="Search posts, tags, authors..." class="w-full bg-slate-950 border border-slate-800 text-slate-200 pl-9 pr-4 py-2 rounded-xl text-xs focus:outline-none focus:border-cyan-500 transition">
+                    </div>
+                    <select id="sortSelect" onchange="renderPosts()" class="w-full sm:w-auto bg-slate-950 border border-slate-800 text-slate-200 px-3 py-2 rounded-xl text-xs focus:outline-none focus:border-cyan-500 cursor-pointer">
+                        <option value="latest" id="optLatest">Latest Posts</option>
+                        <option value="popular" id="optPopular">Most Liked</option>
+                        <option value="comments" id="optComments">Most Commented</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Main Content Layout (Grid + Sidebar) -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Blog Cards Grid (Left 2 Columns) -->
+                <div id="postsGrid" class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <!-- Dynamically Rendered Posts -->
+                </div>
+
+                <!-- Sidebar / Featured Widgets (Right 1 Column) -->
+                <aside class="space-y-6">
+                    
+                    <!-- Active Author Profile Widget -->
+                    <div class="glass-card border border-slate-800 rounded-2xl p-5 space-y-4 shadow-lg">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-cyan-400" id="lblProfileCard">Author Profile</h3>
+                            <span class="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded-md font-mono" id="lblUserRole">User</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <img id="userAvatarImg" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150" class="w-12 h-12 rounded-full object-cover border-2 border-cyan-500">
+                            <div>
+                                <h4 class="font-bold text-white text-sm" id="userNameTxt">Alex Morgan</h4>
+                                <p class="text-xs text-slate-400" id="userBioTxt">Full Stack Dev & Content Creator</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 text-center bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
+                            <div>
+                                <span class="block text-sm font-bold text-cyan-400" id="statMyPosts">0</span>
+                                <span class="text-[10px] text-slate-400" id="lblStatPosts">Posts</span>
+                            </div>
+                            <div>
+                                <span class="block text-sm font-bold text-teal-400" id="statMyBookmarks">0</span>
+                                <span class="text-[10px] text-slate-400" id="lblStatBookmarks">Saved</span>
+                            </div>
+                            <div>
+                                <span class="block text-sm font-bold text-indigo-400" id="statMyLikes">0</span>
+                                <span class="text-[10px] text-slate-400" id="lblStatLikes">Likes</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trending Tags Widget -->
+                    <div class="glass-card border border-slate-800 rounded-2xl p-5 space-y-3 shadow-lg">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center space-x-2">
+                            <i class="fa-solid fa-hashtag text-cyan-400"></i>
+                            <span id="lblTrendingTags">Trending Topics</span>
+                        </h3>
+                        <div class="flex flex-wrap gap-2" id="tagsContainer">
+                            <!-- Populated tags -->
+                        </div>
+                    </div>
+
+                    <!-- Platform Stats -->
+                    <div class="glass-card border border-slate-800 rounded-2xl p-5 space-y-3 shadow-lg">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300" id="lblPlatformMetrics">Platform Insights</h3>
+                        <div class="space-y-2 text-xs">
+                            <div class="flex justify-between text-slate-300">
+                                <span id="lblTotalArticles">Total Articles</span>
+                                <span class="font-bold text-cyan-400" id="metricTotalPosts">0</span>
+                            </div>
+                            <div class="flex justify-between text-slate-300">
+                                <span id="lblTotalComments">Community Comments</span>
+                                <span class="font-bold text-teal-400" id="metricTotalComments">0</span>
+                            </div>
+                            <div class="flex justify-between text-slate-300">
+                                <span id="lblArchitecture">Architecture</span>
+                                <span class="font-mono text-[11px] text-indigo-400">REST + Auth</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </aside>
+            </div>
+        </div>
+
+        <!-- SECTION: DASHBOARD VIEW -->
+        <div id="dashboardSection" class="space-y-6 hidden">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-white" id="dashTitle">Author Analytics & Content Management</h2>
+                    <p class="text-xs text-slate-400" id="dashSub">Track post performance, view reader engagement, and manage your articles.</p>
+                </div>
+                <button onclick="openCreatePostModal()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-cyan-600/30 transition flex items-center space-x-2">
+                    <i class="fa-solid fa-plus"></i>
+                    <span id="btnNewArticleDash">New Article</span>
+                </button>
+            </div>
+
+            <!-- Stats Overview Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="glass-card border border-slate-800 p-4 rounded-2xl flex items-center space-x-4">
+                    <div class="p-3 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-xl">
+                        <i class="fa-solid fa-newspaper text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs text-slate-400 block" id="lblDashTotalPosts">Published Articles</span>
+                        <h4 class="text-2xl font-black text-white" id="dashTotalPostsNum">0</h4>
+                    </div>
+                </div>
+                <div class="glass-card border border-slate-800 p-4 rounded-2xl flex items-center space-x-4">
+                    <div class="p-3 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-xl">
+                        <i class="fa-solid fa-heart text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs text-slate-400 block" id="lblDashTotalLikes">Total Likes</span>
+                        <h4 class="text-2xl font-black text-white" id="dashTotalLikesNum">0</h4>
+                    </div>
+                </div>
+                <div class="glass-card border border-slate-800 p-4 rounded-2xl flex items-center space-x-4">
+                    <div class="p-3 bg-teal-500/10 text-teal-400 border border-teal-500/20 rounded-xl">
+                        <i class="fa-solid fa-comments text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs text-slate-400 block" id="lblDashTotalComments">Reader Comments</span>
+                        <h4 class="text-2xl font-black text-white" id="dashTotalCommentsNum">0</h4>
+                    </div>
+                </div>
+                <div class="glass-card border border-slate-800 p-4 rounded-2xl flex items-center space-x-4">
+                    <div class="p-3 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-xl">
+                        <i class="fa-solid fa-eye text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs text-slate-400 block" id="lblDashTotalViews">Estimated Views</span>
+                        <h4 class="text-2xl font-black text-white" id="dashTotalViewsNum">0</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Author Posts Table -->
+            <div class="glass-card border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                <div class="p-4 border-b border-slate-800 flex justify-between items-center">
+                    <h3 class="text-sm font-bold text-white" id="lblYourArticlesTable">Your Published Articles</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-800 bg-slate-950/60 text-slate-400 text-xs uppercase tracking-wider">
+                                <th class="p-4" id="thArticle">Article</th>
+                                <th class="p-4" id="thCategory">Category</th>
+                                <th class="p-4" id="thDate">Published</th>
+                                <th class="p-4" id="thEngagement">Engagement</th>
+                                <th class="p-4 text-right" id="thActions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashTableBody" class="divide-y divide-slate-800/80 text-sm">
+                            <!-- Dynamic rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL: READ DETAILED POST -->
+    <div id="readPostModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl relative overflow-hidden">
+            
+            <!-- Modal Top Header Bar -->
+            <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
+                <span id="readModalCategory" class="text-xs font-bold text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/20">Category</span>
+                <div class="flex items-center space-x-2">
+                    <button onclick="toggleCurrentPostBookmark()" id="btnModalBookmark" class="p-2 text-slate-400 hover:text-cyan-400 transition">
+                        <i class="fa-regular fa-bookmark text-base"></i>
+                    </button>
+                    <button onclick="closeReadPostModal()" class="p-2 text-slate-400 hover:text-white transition">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scrollable Content Body -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-6">
+                <div class="space-y-3">
+                    <h2 id="readModalTitle" class="text-2xl sm:text-3xl font-extrabold text-white leading-tight">Post Title</h2>
+                    <div class="flex items-center space-x-3 text-xs text-slate-400 border-b border-slate-800/80 pb-4">
+                        <img id="readModalAuthorImg" src="" class="w-8 h-8 rounded-full object-cover border border-slate-700">
+                        <div>
+                            <span id="readModalAuthor" class="font-semibold text-slate-200">Author Name</span>
+                            <span class="mx-1.5">•</span>
+                            <span id="readModalDate">Oct 24, 2026</span>
+                            <span class="mx-1.5">•</span>
+                            <span id="readModalReadTime">5 min read</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-64 sm:h-80 rounded-xl overflow-hidden bg-slate-950">
+                    <img id="readModalCover" src="" class="w-full h-full object-cover">
+                </div>
+
+                <div id="readModalContent" class="text-slate-300 text-sm sm:text-base leading-relaxed space-y-4">
+                    <!-- Dynamic Post Body Content -->
+                </div>
+
+                <!-- Post Tags -->
+                <div id="readModalTags" class="flex flex-wrap gap-1.5 pt-2">
+                    <!-- Tags -->
+                </div>
+
+                <!-- Interaction Stats Bar -->
+                <div class="flex items-center justify-between border-y border-slate-800 py-3">
+                    <button onclick="likeCurrentPost()" class="flex items-center space-x-2 text-rose-400 hover:text-rose-300 bg-rose-500/10 px-3 py-1.5 rounded-xl border border-rose-500/20 text-xs font-bold transition">
+                        <i class="fa-solid fa-heart"></i>
+                        <span id="readModalLikesCount">0</span>
+                    </button>
+                    <span class="text-xs text-slate-400 flex items-center space-x-1">
+                        <i class="fa-solid fa-comments text-cyan-400"></i>
+                        <span id="readModalCommentsCount">0</span>
+                        <span id="lblCommentsHeader">Comments</span>
+                    </span>
+                </div>
+
+                <!-- COMMENTS SECTION -->
+                <div class="space-y-4 pt-2">
+                    <h3 class="text-base font-bold text-white" id="lblDiscussionTitle">Community Discussion</h3>
+                    
+                    <!-- Add Comment Form -->
+                    <form onsubmit="handleAddComment(event)" class="space-y-3">
+                        <div class="relative">
+                            <textarea id="commentInput" rows="2" required placeholder="Write a constructive comment..." class="w-full bg-slate-950 border border-slate-800 text-slate-100 p-3 rounded-xl text-xs focus:outline-none focus:border-cyan-500 transition resize-none"></textarea>
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit" class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-1.5 rounded-xl text-xs font-bold shadow transition">
+                                <span id="btnPostComment">Post Comment</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Comments Thread Container -->
+                    <div id="commentsThread" class="space-y-3 pt-2">
+                        <!-- Dynamic Comments -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL: CREATE / EDIT POST -->
+    <div id="createPostModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
+                <h3 id="createModalTitle" class="text-lg font-bold text-white">Create New Blog Article</h3>
+                <button onclick="closeCreatePostModal()" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form id="postForm" onsubmit="handleSavePost(event)" class="space-y-4">
+                <input type="hidden" id="editPostId">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1" id="lblFormTitle">Article Title *</label>
+                    <input type="text" id="postTitleInput" required placeholder="e.g. Building Scalable Web APIs with REST Architecture" class="w-full bg-slate-950 border border-slate-800 text-slate-100 px-3 py-2 rounded-xl text-xs focus:outline-none focus:border-cyan-500">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1" id="lblFormCategory">Category *</label>
+                        <select id="postCatInput" class="w-full bg-slate-950 border border-slate-800 text-slate-100 px-3 py-2 rounded-xl text-xs focus:outline-none focus:border-cyan-500">
+                            <option value="Web Dev">Web Dev</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Design">Design</option>
+                            <option value="AI & ML">AI & ML</option>
+                            <option value="Career">Career</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1" id="lblFormReadTime">Estimated Read Time *</label>
+                        <input type="text" id="postReadTimeInput" required placeholder="e.g. 5 min read" class="w-full bg-slate-950 border border-slate-800 text-slate-100 px-3 py-2 rounded-xl text-xs focus:outline-none focus:border-cyan-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1" id="lblFormCover">Cover Image URL</label>
+                    <input type="text" id="postCoverInput" placeholder="https://images.unsplash.com/..." class="w-full bg-slate-950 border border-slate-800 text-slate-100 px-3 py-2 rounded-xl text-xs focus:outline-none focus:border-cyan-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1" id="lblFormTags">Tags (Comma separated)</label>
+                    <input type="text" id="postTagsInput" placeholder="javascript, react, fullstack, backend" class="w-full bg-slate-950 border border-slate-800 text-slate-100 px-3 py-2 rounded-xl text-xs focus:outline-none focus:border-cyan-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1" id="lblFormContent">Article Body Content *</label>
+                    <textarea id="postContentInput" rows="6" required placeholder="Write your full article text here..." class="w-full bg-slate-950 border border-slate-800 text-slate-100 p-3 rounded-xl text-xs focus:outline-none focus:border-cyan-500"></textarea>
+                </div>
+                <div class="pt-3 border-t border-slate-800 flex justify-end space-x-3">
+                    <button type="button" onclick="closeCreatePostModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold" id="btnCancelPost">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-cyan-600/20" id="btnSavePost">Publish Article</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: AUTHENTICATION SIMULATION -->
+    <div id="authModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl relative">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
+                <h3 class="text-base font-bold text-white" id="lblAuthModalTitle">User Switch / Authentication</h3>
+                <button onclick="closeAuthModal()" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="space-y-3">
+                <p class="text-xs text-slate-400" id="lblAuthDesc">Select a profile to simulate authenticated state:</p>
+                <div onclick="switchUserProfile('Alex Morgan', 'Full Stack Dev', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150', 'Author')" class="flex items-center space-x-3 p-3 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl cursor-pointer transition">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150" class="w-10 h-10 rounded-full object-cover">
+                    <div>
+                        <h4 class="font-bold text-xs text-white">Alex Morgan</h4>
+                        <span class="text-[10px] text-cyan-400">Author & Developer</span>
+                    </div>
+                </div>
+                <div onclick="switchUserProfile('Priya Patil', 'UI/UX Designer & Writer', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150', 'User')" class="flex items-center space-x-3 p-3 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl cursor-pointer transition">
+                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150" class="w-10 h-10 rounded-full object-cover">
+                    <div>
+                        <h4 class="font-bold text-xs text-white">Priya Patil</h4>
+                        <span class="text-[10px] text-teal-400">Design Specialist</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: TASK TUTORIAL & ARCHITECTURE GUIDE -->
+    <div id="tutorialModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
+                <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-graduation-cap text-cyan-400"></i>
+                    <span id="tutTitle">Full-Stack Blog Tutorial & Architecture</span>
+                </h3>
+                <button onclick="closeTutorialModal()" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4 text-xs text-slate-300">
+                <div class="p-3.5 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
+                    <h4 class="font-bold text-cyan-400 text-sm" id="tutStep1">1. RESTful API Endpoints Schema</h4>
+                    <p class="text-slate-400 font-mono text-[11px]">GET /api/posts - Fetch filtered blog list<br>POST /api/posts - Create blog post<br>GET /api/posts/:id/comments - Fetch post comments<br>POST /api/posts/:id/comments - Add threaded comment</p>
+                </div>
+                <div class="p-3.5 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
+                    <h4 class="font-bold text-teal-400 text-sm" id="tutStep2">2. Database Schema Model</h4>
+                    <p class="text-slate-400" id="tutSchemaDesc">Entities include Users (id, name, avatar, role), Posts (id, title, content, category, authorId, likes, views), and Comments (id, postId, userId, content, createdAt).</p>
+                </div>
+                <div class="p-3.5 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
+                    <h4 class="font-bold text-indigo-400 text-sm" id="tutStep3">3. Interactive Features Checklist</h4>
+                    <p class="text-slate-400" id="tutFeaturesDesc">Supports CRUD for posts, real-time comment counting, liking, user bookmarks, live topic filter, author stats, and Marathi language support.</p>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button onclick="closeTutorialModal()" class="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold shadow">
+                    <span id="tutBtnUnderstand">Understood!</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Logic Script -->
+    <script>
+        // --- State Management ---
+        let currentLang = 'en';
+        let currentCategory = 'All';
+        let activePostId = null;
+
+        let currentUser = {
+            name: 'Alex Morgan',
+            bio: 'Full Stack Dev & Content Creator',
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150',
+            role: 'Author'
+        };
+
+        let posts = [];
+        let bookmarks = new Set();
+
+        // Dual Language Dictionary
+        const i18n = {
+            en: {
+                subHeaderDesc: "Full-Stack Blogging Platform & API Hub",
+                txtWatchTutorial: "Task Tutorial",
+                btnCreatePostNav: "Write Post",
+                heroBadge: "Full-Stack Tech Stories",
+                heroTitle: "Publish Ideas, Engage Readers & Master APIs",
+                heroDesc: "A modern blog ecosystem with real-time comments, category management, author metrics, and REST architecture setup.",
+                optLatest: "Latest Posts",
+                optPopular: "Most Liked",
+                optComments: "Most Commented",
+                lblProfileCard: "Author Profile",
+                lblStatPosts: "Posts",
+                lblStatBookmarks: "Saved",
+                lblStatLikes: "Likes",
+                lblTrendingTags: "Trending Topics",
+                lblPlatformMetrics: "Platform Insights",
+                lblTotalArticles: "Total Articles",
+                lblTotalComments: "Community Comments",
+                lblArchitecture: "Architecture",
+                dashTitle: "Author Analytics & Content Management",
+                dashSub: "Track post performance, view reader engagement, and manage your articles.",
+                btnNewArticleDash: "New Article",
+                lblDashTotalPosts: "Published Articles",
+                lblDashTotalLikes: "Total Likes",
+                lblDashTotalComments: "Reader Comments",
+                lblDashTotalViews: "Estimated Views",
+                lblYourArticlesTable: "Your Published Articles",
+                thArticle: "Article",
+                thCategory: "Category",
+                thDate: "Published",
+                thEngagement: "Engagement",
+                thActions: "Actions",
+                lblCommentsHeader: "Comments",
+                lblDiscussionTitle: "Community Discussion",
+                btnPostComment: "Post Comment",
+                lblFormTitle: "Article Title *",
+                lblFormCategory: "Category *",
+                lblFormReadTime: "Estimated Read Time *",
+                lblFormCover: "Cover Image URL",
+                lblFormTags: "Tags (Comma separated)",
+                lblFormContent: "Article Body Content *",
+                btnCancelPost: "Cancel",
+                btnSavePost: "Publish Article",
+                lblAuthModalTitle: "User Switch / Authentication",
+                lblAuthDesc: "Select a profile to simulate authenticated state:",
+                tutTitle: "Full-Stack Blog Tutorial & Architecture",
+                tutStep1: "1. RESTful API Endpoints Schema",
+                tutStep2: "2. Database Schema Model",
+                tutSchemaDesc: "Entities include Users (id, name, avatar, role), Posts (id, title, content, category, authorId, likes, views), and Comments (id, postId, userId, content, createdAt).",
+                tutStep3: "3. Interactive Features Checklist",
+                tutFeaturesDesc: "Supports CRUD for posts, real-time comment counting, liking, user bookmarks, live topic filter, author stats, and Marathi language support.",
+                tutBtnUnderstand: "Understood!"
+            },
+            mr: {
+                subHeaderDesc: "फुल-स्टॅक ब्लॉगिंग प्लॅटफॉर्म आणि एपीआय हब",
+                txtWatchTutorial: "टास्क ट्यूटोरियल",
+                btnCreatePostNav: "ब्लॉग लिहा",
+                heroBadge: "टेक कथा आणि विचार",
+                heroTitle: "विचार प्रकाशित करा, वाचक वाढवा आणि शिकत राहा",
+                heroDesc: "रिअल-टाईम कमेंट्स, वर्गवारी, आणि लेखक मेट्रिक्ससह आधुनिक ब्लॉगिंग प्लॅटफॉर्म.",
+                optLatest: "नवीन ब्लॉग",
+                optPopular: "सर्वात लोकप्रिय",
+                optComments: "सर्वात जास्त कमेंट्स",
+                lblProfileCard: "लेखक प्रोफाईल",
+                lblStatPosts: "पोस्ट्स",
+                lblStatBookmarks: "जतन केलेले",
+                lblStatLikes: "लाइक्स",
+                lblTrendingTags: "ट्रेंडिंग विषय",
+                lblPlatformMetrics: "प्लॅटफॉर्म सांख्यिकी",
+                lblTotalArticles: "एकूण लेख",
+                lblTotalComments: "एकूण कमेंट्स",
+                lblArchitecture: "रचना (Architecture)",
+                dashTitle: "लेखक ॲनालिटिक्स आणि सामग्री व्यवस्थापन",
+                dashSub: "तुमच्या लेखांची कामगिरी आणि वाचकांचा प्रतिसाद पहा.",
+                btnNewArticleDash: "नवीन लेख",
+                lblDashTotalPosts: "प्रकाशित लेख",
+                lblDashTotalLikes: "एकूण लाइक्स",
+                lblDashTotalComments: "वाचक कमेंट्स",
+                lblDashTotalViews: "एकूण व्ह्यूज",
+                lblYourArticlesTable: "तुमचे प्रकाशित लेख",
+                thArticle: "लेख",
+                thCategory: "वर्गवारी",
+                thDate: "दिनांक",
+                thEngagement: "प्रतिसाद",
+                thActions: "कृती",
+                lblCommentsHeader: "कमेंट्स",
+                lblDiscussionTitle: "वाचक चर्चा",
+                btnPostComment: "कमेंट पोस्ट करा",
+                lblFormTitle: "लेखाचे शीर्षक *",
+                lblFormCategory: "वर्गवारी *",
+                lblFormReadTime: "वाचनाचा वेळ *",
+                lblFormCover: "कव्हर इमेज URL",
+                lblFormTags: "टॅग्स (स्वल्पविरामाने वेगळे करा)",
+                lblFormContent: "लेखाचा मजकूर *",
+                btnCancelPost: "रद्द करा",
+                btnSavePost: "लेख प्रकाशित करा",
+                lblAuthModalTitle: "वापरकर्ता स्विच / ऑथेंटिकेशन",
+                lblAuthDesc: "ऑथेंटिकेटेड स्टेट तपासण्यासाठी प्रोफाईल निवडा:",
+                tutTitle: "ब्लॉग आर्किटेक्चर आणि मार्गदर्शक",
+                tutStep1: "१. RESTful API एंडपॉइंट्स",
+                tutStep2: "२. डेटाबेस मॉडेल",
+                tutSchemaDesc: "डेटाबेसमध्ये Users, Posts आणि Comments टेबल समाविष्ट आहेत.",
+                tutStep3: "३. वैशिष्ट्ये आणि क्षमता",
+                tutFeaturesDesc: "पोस्ट्स तयार करणे, एडिट करणे, कमेंट्स देणे, लाईक करणे आणि मराठी भाषा सपोर्ट.",
+                tutBtnUnderstand: "समजले!"
+            }
+        };
+
+        // --- Initialization ---
+        window.onload = function () {
+            loadStoredPosts();
+            renderCategories();
+            renderPosts();
+            renderTags();
+            updateProfileUI();
+            updateLanguageUI();
+        };
+
+        function loadStoredPosts() {
+            const stored = localStorage.getItem('devpulse_posts');
+            if (stored) {
+                posts = JSON.parse(stored);
+            } else {
+                posts = [
+                    {
+                        id: 'post-1',
+                        title: 'Full-Stack Web Development Roadmap in 2026',
+                        summary: 'Mastering modern REST APIs, client-side rendering, scalable backend microservices, and database design.',
+                        content: 'Web development in 2026 demands a complete understanding of both modern front-end dynamic UI design and resilient RESTful backend services. In this comprehensive post, we dive into how architecture choices impact responsiveness, application load speeds, and database scalability.',
+                        category: 'Web Dev',
+                        author: 'Alex Morgan',
+                        authorImg: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150',
+                        cover: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=600',
+                        date: 'Oct 15, 2026',
+                        readTime: '6 min read',
+                        tags: ['webdev', 'fullstack', 'javascript', 'api'],
+                        likes: 42,
+                        views: 310,
+                        comments: [
+                            { id: 'c1', user: 'Priya Patil', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150', text: 'Extremely well organized roadmap! Loved the emphasis on API design.', date: 'Oct 16, 2026' }
+                        ]
+                    },
+                    {
+                        id: 'post-2',
+                        title: 'Designing Clean Rest APIs & Microservices',
+                        summary: 'Best practices for REST JSON contracts, error handling, status codes, and JWT authorization.',
+                        content: 'Creating reliable backend services starts with clean interface contracts. Standardizing status responses (200, 201, 400, 404) and providing standard payload models ensures high developer productivity across web and mobile platforms.',
+                        category: 'Technology',
+                        author: 'Priya Patil',
+                        authorImg: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150',
+                        cover: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=600',
+                        date: 'Oct 18, 2026',
+                        readTime: '4 min read',
+                        tags: ['backend', 'rest', 'api', 'architecture'],
+                        likes: 28,
+                        views: 185,
+                        comments: []
+                    }
+                ];
+                savePostsToStorage();
+            }
+        }
+
+        function savePostsToStorage() {
+            localStorage.setItem('devpulse_posts', JSON.stringify(posts));
+        }
+
+        // --- Language Toggle ---
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'mr' : 'en';
+            updateLanguageUI();
+        }
+
+        function updateLanguageUI() {
+            const dict = i18n[currentLang];
+            for (let key in dict) {
+                const el = document.getElementById(key);
+                if (el) el.textContent = dict[key];
+            }
+            renderCategories();
+        }
+
+        // --- UI Section Switching ---
+        function showSection(sec) {
+            const feed = document.getElementById('feedSection');
+            const dash = document.getElementById('dashboardSection');
+            const btnFeed = document.getElementById('navFeedBtn');
+            const btnDash = document.getElementById('navDashBtn');
+
+            if (sec === 'dashboard') {
+                feed.classList.add('hidden');
+                dash.classList.remove('hidden');
+                btnDash.className = "p-2 text-cyan-400 hover:bg-slate-800 rounded-lg transition";
+                btnFeed.className = "p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition";
+                renderDashboard();
+            } else {
+                dash.classList.add('hidden');
+                feed.classList.remove('hidden');
+                btnFeed.className = "p-2 text-cyan-400 hover:bg-slate-800 rounded-lg transition";
+                btnDash.className = "p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition";
+                renderPosts();
+            }
+        }
+
+        // --- Categories & Filtering ---
+        function renderCategories() {
+            const container = document.getElementById('categoryContainer');
+            const categories = ['All', 'Web Dev', 'Technology', 'Design', 'AI & ML', 'Career'];
+
+            container.innerHTML = categories.map(cat => `
+                <button onclick="filterCategory('${cat}')" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition ${currentCategory === cat ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/20' : 'bg-slate-950 border border-slate-800 text-slate-300 hover:bg-slate-800'}">
+                    ${cat}
+                </button>
+            `).join('');
+        }
+
+        function filterCategory(cat) {
+            currentCategory = cat;
+            renderCategories();
+            renderPosts();
+        }
+
+        // --- Render Posts Grid ---
+        function renderPosts() {
+            const grid = document.getElementById('postsGrid');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const sort = document.getElementById('sortSelect').value;
+
+            let filtered = posts.filter(p => {
+                const matchCat = currentCategory === 'All' || p.category === currentCategory;
+                const matchSearch = p.title.toLowerCase().includes(search) || 
+                                    p.summary.toLowerCase().includes(search) || 
+                                    p.author.toLowerCase().includes(search) ||
+                                    p.tags.some(t => t.toLowerCase().includes(search));
+                return matchCat && matchSearch;
+            });
+
+            if (sort === 'popular') filtered.sort((a,b) => b.likes - a.likes);
+            else if (sort === 'comments') filtered.sort((a,b) => b.comments.length - a.comments.length);
+            else filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+            updatePlatformMetrics();
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-16 text-center text-slate-400 glass-card rounded-2xl border border-slate-800">No blog posts found matching your filter criteria.</div>`;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(p => `
+                <div class="glass-card border border-slate-800 rounded-2xl overflow-hidden shadow-lg hover:border-cyan-500/40 transition duration-300 flex flex-col group">
+                    <div class="h-44 overflow-hidden bg-slate-950 relative cursor-pointer" onclick="openReadPostModal('${p.id}')">
+                        <img src="${p.cover}" alt="${escapeHtml(p.title)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=600'">
+                        <span class="absolute top-3 left-3 bg-slate-950/80 backdrop-blur-md text-[10px] font-bold px-2.5 py-1 rounded-lg border border-slate-700 text-cyan-300">
+                            ${p.category}
+                        </span>
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+                        <div class="space-y-2">
+                            <h3 onclick="openReadPostModal('${p.id}')" class="text-base font-bold text-white group-hover:text-cyan-300 transition cursor-pointer leading-snug line-clamp-2">
+                                ${escapeHtml(p.title)}
+                            </h3>
+                            <p class="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                                ${escapeHtml(p.summary)}
+                            </p>
+                        </div>
+
+                        <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+                            <div class="flex items-center space-x-2">
+                                <img src="${p.authorImg}" class="w-6 h-6 rounded-full object-cover">
+                                <span class="font-medium text-slate-300 text-[11px]">${escapeHtml(p.author)}</span>
+                            </div>
+                            <div class="flex items-center space-x-3 text-[11px]">
+                                <span class="flex items-center space-x-1 hover:text-rose-400 cursor-pointer" onclick="quickLike('${p.id}')">
+                                    <i class="fa-solid fa-heart text-rose-500"></i>
+                                    <span>${p.likes}</span>
+                                </span>
+                                <span class="flex items-center space-x-1">
+                                    <i class="fa-solid fa-comments text-cyan-400"></i>
+                                    <span>${p.comments.length}</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderTags() {
+            const container = document.getElementById('tagsContainer');
+            const allTags = Array.from(new Set(posts.flatMap(p => p.tags)));
+            container.innerHTML = allTags.map(t => `
+                <span onclick="setTagSearch('${t}')" class="px-2.5 py-1 bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 rounded-lg text-[11px] cursor-pointer transition">
+                    #${t}
+                </span>
+            `).join('');
+        }
+
+        function setTagSearch(tag) {
+            document.getElementById('searchInput').value = tag;
+            renderPosts();
+        }
+
+        function quickLike(id) {
+            const post = posts.find(p => p.id === id);
+            if (post) {
+                post.likes += 1;
+                savePostsToStorage();
+                renderPosts();
+                showToast("Post Liked!");
+            }
+        }
+
+        // --- Detailed Post Modal & Comment Operations ---
+        function openReadPostModal(id) {
+            const p = posts.find(item => item.id === id);
+            if (!p) return;
+
+            activePostId = id;
+            p.views += 1;
+            savePostsToStorage();
+
+            document.getElementById('readModalCategory').textContent = p.category;
+            document.getElementById('readModalTitle').textContent = p.title;
+            document.getElementById('readModalAuthor').textContent = p.author;
+            document.getElementById('readModalAuthorImg').src = p.authorImg;
+            document.getElementById('readModalDate').textContent = p.date;
+            document.getElementById('readModalReadTime').textContent = p.readTime;
+            document.getElementById('readModalCover').src = p.cover;
+            document.getElementById('readModalContent').textContent = p.content;
+            document.getElementById('readModalLikesCount').textContent = p.likes;
+            document.getElementById('readModalCommentsCount').textContent = p.comments.length;
+
+            const tagsContainer = document.getElementById('readModalTags');
+            tagsContainer.innerHTML = p.tags.map(t => `<span class="bg-slate-950 border border-slate-800 text-cyan-400 text-[10px] px-2 py-0.5 rounded-md font-mono">#${t}</span>`).join('');
+
+            renderCommentsThread(p.comments);
+            document.getElementById('readPostModal').classList.remove('hidden');
+        }
+
+        function closeReadPostModal() {
+            document.getElementById('readPostModal').classList.add('hidden');
+            activePostId = null;
+            renderPosts();
+        }
+
+        function renderCommentsThread(comments) {
+            const thread = document.getElementById('commentsThread');
+            if (comments.length === 0) {
+                thread.innerHTML = `<p class="text-xs text-slate-500 py-4 text-center">No comments yet. Be the first to start the discussion!</p>`;
+                return;
+            }
+
+            thread.innerHTML = comments.map(c => `
+                <div class="bg-slate-950 border border-slate-800/80 p-3.5 rounded-xl space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <img src="${c.avatar}" class="w-6 h-6 rounded-full object-cover">
+                            <span class="font-bold text-slate-200 text-xs">${escapeHtml(c.user)}</span>
+                        </div>
+                        <span class="text-[10px] text-slate-500">${c.date}</span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed pl-8">${escapeHtml(c.text)}</p>
+                </div>
+            `).join('');
+        }
+
+        function handleAddComment(e) {
+            e.preventDefault();
+            if (!activePostId) return;
+
+            const input = document.getElementById('commentInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const post = posts.find(p => p.id === activePostId);
+            if (post) {
+                const newComment = {
+                    id: 'c-' + Date.now(),
+                    user: currentUser.name,
+                    avatar: currentUser.avatar,
+                    text: text,
+                    date: 'Just now'
+                };
+                post.comments.push(newComment);
+                savePostsToStorage();
+
+                renderCommentsThread(post.comments);
+                document.getElementById('readModalCommentsCount').textContent = post.comments.length;
+                input.value = '';
+                showToast("Comment published!");
+            }
+        }
+
+        function likeCurrentPost() {
+            if (!activePostId) return;
+            const post = posts.find(p => p.id === activePostId);
+            if (post) {
+                post.likes += 1;
+                savePostsToStorage();
+                document.getElementById('readModalLikesCount').textContent = post.likes;
+                showToast("Liked post!");
+            }
+        }
+
+        function toggleCurrentPostBookmark() {
+            if (!activePostId) return;
+            if (bookmarks.has(activePostId)) {
+                bookmarks.delete(activePostId);
+                showToast("Removed from bookmarks");
+            } else {
+                bookmarks.add(activePostId);
+                showToast("Saved to bookmarks!");
+            }
+            updateProfileUI();
+        }
+
+        // --- Create & Edit Post Logic ---
+        function openCreatePostModal(editId = null) {
+            const modal = document.getElementById('createPostModal');
+            const form = document.getElementById('postForm');
+            const title = document.getElementById('createModalTitle');
+
+            form.reset();
+            document.getElementById('editPostId').value = '';
+
+            if (editId) {
+                const p = posts.find(item => item.id === editId);
+                if (p) {
+                    title.textContent = 'Edit Article';
+                    document.getElementById('editPostId').value = p.id;
+                    document.getElementById('postTitleInput').value = p.title;
+                    document.getElementById('postCatInput').value = p.category;
+                    document.getElementById('postReadTimeInput').value = p.readTime;
+                    document.getElementById('postCoverInput').value = p.cover;
+                    document.getElementById('postTagsInput').value = p.tags.join(', ');
+                    document.getElementById('postContentInput').value = p.content;
+                }
+            } else {
+                title.textContent = 'Create New Blog Article';
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeCreatePostModal() {
+            document.getElementById('createPostModal').classList.add('hidden');
+        }
+
+        function handleSavePost(e) {
+            e.preventDefault();
+            const id = document.getElementById('editPostId').value;
+            const title = document.getElementById('postTitleInput').value.trim();
+            const category = document.getElementById('postCatInput').value;
+            const readTime = document.getElementById('postReadTimeInput').value.trim();
+            const cover = document.getElementById('postCoverInput').value.trim() || 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=600';
+            const tagsRaw = document.getElementById('postTagsInput').value;
+            const content = document.getElementById('postContentInput').value.trim();
+
+            const tags = tagsRaw.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+            const summary = content.slice(0, 120) + (content.length > 120 ? '...' : '');
+
+            if (id) {
+                const index = posts.findIndex(p => p.id === id);
+                if (index !== -1) {
+                    posts[index] = {
+                        ...posts[index],
+                        title, category, readTime, cover, tags, content, summary
+                    };
+                    showToast("Article updated successfully!");
+                }
+            } else {
+                const newPost = {
+                    id: 'post-' + Date.now(),
+                    title, summary, content, category,
+                    author: currentUser.name,
+                    authorImg: currentUser.avatar,
+                    cover,
+                    date: 'Oct 19, 2026',
+                    readTime, tags,
+                    likes: 0, views: 0, comments: []
+                };
+                posts.unshift(newPost);
+                showToast("Article published successfully!");
+            }
+
+            savePostsToStorage();
+            closeCreatePostModal();
+            renderPosts();
+            renderTags();
+            updateProfileUI();
+            renderDashboard();
+        }
+
+        function deletePost(id) {
+            posts = posts.filter(p => p.id !== id);
+            savePostsToStorage();
+            renderPosts();
+            renderDashboard();
+            updateProfileUI();
+            showToast("Article deleted.");
+        }
+
+        // --- Dashboard Analytics ---
+        function renderDashboard() {
+            const myPosts = posts.filter(p => p.author === currentUser.name);
+            
+            document.getElementById('dashTotalPostsNum').textContent = myPosts.length;
+            document.getElementById('dashTotalLikesNum').textContent = myPosts.reduce((acc, p) => acc + p.likes, 0);
+            document.getElementById('dashTotalCommentsNum').textContent = myPosts.reduce((acc, p) => acc + p.comments.length, 0);
+            document.getElementById('dashTotalViewsNum').textContent = myPosts.reduce((acc, p) => acc + p.views, 0);
+
+            const tbody = document.getElementById('dashTableBody');
+            if (myPosts.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">You haven't published any articles yet.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = myPosts.map(p => `
+                <tr class="hover:bg-slate-950/40 transition">
+                    <td class="p-4 font-bold text-white flex items-center space-x-3">
+                        <img src="${p.cover}" class="w-10 h-10 object-cover rounded-lg bg-slate-950">
+                        <span class="line-clamp-1">${escapeHtml(p.title)}</span>
+                    </td>
+                    <td class="p-4 text-cyan-400 font-semibold text-xs">${p.category}</td>
+                    <td class="p-4 text-slate-400 text-xs">${p.date}</td>
+                    <td class="p-4 text-xs space-x-2">
+                        <span class="text-rose-400"><i class="fa-solid fa-heart mr-1"></i>${p.likes}</span>
+                        <span class="text-cyan-400"><i class="fa-solid fa-comments mr-1"></i>${p.comments.length}</span>
+                    </td>
+                    <td class="p-4 text-right space-x-2">
+                        <button onclick="openCreatePostModal('${p.id}')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold">Edit</button>
+                        <button onclick="deletePost('${p.id}')" class="px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg text-xs font-semibold">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // --- Profile & Metrics ---
+        function updateProfileUI() {
+            document.getElementById('userNameTxt').textContent = currentUser.name;
+            document.getElementById('userBioTxt').textContent = currentUser.bio;
+            document.getElementById('userAvatarImg').src = currentUser.avatar;
+            document.getElementById('lblUserRole').textContent = currentUser.role;
+
+            const myPosts = posts.filter(p => p.author === currentUser.name);
+            document.getElementById('statMyPosts').textContent = myPosts.length;
+            document.getElementById('statMyBookmarks').textContent = bookmarks.size;
+            document.getElementById('statMyLikes').textContent = myPosts.reduce((acc, p) => acc + p.likes, 0);
+        }
+
+        function updatePlatformMetrics() {
+            document.getElementById('metricTotalPosts').textContent = posts.length;
+            document.getElementById('metricTotalComments').textContent = posts.reduce((acc, p) => acc + p.comments.length, 0);
+        }
+
+        function switchUserProfile(name, bio, avatar, role) {
+            currentUser = { name, bio, avatar, role };
+            updateProfileUI();
+            closeAuthModal();
+            showToast(`Switched profile to ${name}`);
+        }
+
+        // --- Auth & Tutorial Modal Helpers ---
+        function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); }
+        function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
+        function openTutorialModal() { document.getElementById('tutorialModal').classList.remove('hidden'); }
+        function closeTutorialModal() { document.getElementById('tutorialModal').classList.add('hidden'); }
+
+        // --- Toast System ---
+        function showToast(msg) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = "bg-slate-900 border border-cyan-500/40 text-cyan-200 px-4 py-2 rounded-xl text-xs font-semibold shadow-xl flex items-center space-x-2 animate-bounce pointer-events-auto";
+            toast.innerHTML = `<i class="fa-solid fa-circle-check text-cyan-400"></i><span>${msg}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
